@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clicker Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background-color: #add8e6;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .title-container {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ff4500;
+    }
+    .upgrade-button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 14px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .upgrade-button:disabled {
+      background-color: #ccc;
+    }
+    .score, .leaderboard {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+    .admin-container {
+      margin-top: 20px;
+    }
+    .admin-button {
+      padding: 10px;
+      font-size: 14px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .badge-selector {
+      margin-top: 10px;
+    }
+    .player-selector {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clicker Game</h1>
+  <div id="name-container">
+    <label for="player-name">Enter your name: </label>
+    <input type="text" id="player-name" placeholder="Your name" />
+    <br>
+    <button id="start-button">Start Game</button>
+  </div>
+  <div id="admin-container" style="display: none;">
+    <label for="admin-password">Admin Password: </label>
+    <input type="password" id="admin-password" placeholder="Admin password" />
+    <button id="admin-login">Login</button>
+  </div>
+  <div id="game-container" style="display: none;">
+    <div class="title-container" id="title-container">Title: None</div>
+    <div class="score">Score: 0</div>
+    <div class="upgrades" id="upgrade-container"></div>
+  </div>
+  <div class="leaderboard">
+    Top Score: <span id="topScore">0</span>
+  </div>
+  <div class="admin-container" id="admin-actions" style="display: none;">
+    <button class="admin-button" id="reset-game">Reset Game</button>
+    <button class="admin-button" id="super-points">Super Points</button>
+    <div class="player-selector">
+      <label for="player-name-select">Select Player: </label>
+      <input type="text" id="player-name-select" placeholder="Enter player's name" />
+    </div>
+    <div class="badge-selector">
+      <label for="badge-select">Give Badge: </label>
+      <select id="badge-select">
+        <option value="none">None</option>
+        <option value="admin">Admin</option>
+        <option value="vip">VIP</option>
+        <option value="tester">Tester</option>
+        <option value="banned">Banned</option>
+      </select>
+      <button class="admin-button" id="assign-badge">Assign Badge</button>
+    </div>
+  </div>
+  <script>
+    let score = 0;
+    let pointsPerClick = 1;
+    let topScore = localStorage.getItem('topScore') ? parseInt(localStorage.getItem('topScore')) : 0;
+    let playerName = '';
+    let playerTitle = 'None';
+    const adminUser = 'sepposiili14';
+    const adminPassword = 'sepposiili14adminkoodi';
+    const upgradeContainer = document.getElementById('upgrade-container');
+    let upgradePrices = [];
+    let allPlayers = {}; // Tallennetaan kaikkien pelaajien tiedot
+
+    // Lisätään 20 parannusta
+    for (let i = 1; i <= 20; i++) {
+      upgradePrices.push(i * 10);
+      let btn = document.createElement('button');
+      btn.className = 'upgrade-button';
+      btn.id = `upgrade${i}`;
+      btn.textContent = `Upgrade ${i} (Price: ${i * 10})`;
+      btn.disabled = true;
+      btn.addEventListener('click', () => buyUpgrade(i - 1));
+      upgradeContainer.appendChild(btn);
+    }
+
+    function startGame() {
+      playerName = document.getElementById('player-name').value;
+      if (!playerName) {
+        alert("Please enter your name to start the game.");
+        return;
+      }
+
+      // Jos pelaajaa ei ole tallennettu aiemmin, luo uusi pelaaja
+      if (!allPlayers[playerName]) {
+        allPlayers[playerName] = { score: 0, title: 'None' };
+      }
+
+      playerTitle = allPlayers[playerName].title;
+
+      document.getElementById('name-container').style.display = 'none';
+      document.getElementById('game-container').style.display = 'block';
+      document.querySelector('h1').textContent = `Clicker Game - Welcome, ${playerName}!`;
+      updateScore();
+      updateUpgrades();
+
+      // Jos pelaaja on admin, näytetään admin-toiminnot
+      if (playerName === adminUser) {
+        document.getElementById('admin-container').style.display = 'block'; 
+      }
+    }
+
+    function updateScore() {
+      document.querySelector('.score').textContent = `Score: ${score}`;
+      updateLeaderboard();
+      updateUpgrades();
+      document.getElementById('title-container').textContent = `Title: ${playerTitle}`;
+    }
+
+    function updateLeaderboard() {
+      if (score > topScore) {
+        topScore = score;
+        localStorage.setItem('topScore', topScore);
+      }
+      document.getElementById('topScore').textContent = topScore;
+    }
+
+    function updateUpgrades() {
+      upgradePrices.forEach((price, index) => {
+        const upgradeButton = document.getElementById(`upgrade${index + 1}`);
+        if (score >= price) {
+          upgradeButton.disabled = false;
+        } else {
+          upgradeButton.disabled = true;
+        }
+      });
+    }
+
+    function buyUpgrade(index) {
+      if (score >= upgradePrices[index]) {
+        score -= upgradePrices[index];
+        pointsPerClick *= 2;  // Kaksinkertaistaa pisteet per klikkaus
+        updateScore();
+      }
+    }
+
+    document.getElementById('game-container').addEventListener('click', () => {
+      score += pointsPerClick;
+      updateScore();
+    });
+
+    document.getElementById('start-button').addEventListener('click', startGame);
+
+    document.getElementById('admin-login').addEventListener('click', function() {
+      const enteredPassword = document.getElementById('admin-password').value;
+      if (enteredPassword === adminPassword) {
+        document.getElementById('admin-actions').style.display = 'block';  // Näytetään admin-toiminnot
+        document.getElementById('admin-container').style.display = 'none';  // Piilotetaan salasanakenttä
+      } else {
+        alert("Incorrect password.");
+      }
+    });
+
+    document.getElementById('reset-game').addEventListener('click', function() {
+      score = 0;
+      pointsPerClick = 1;
+      updateScore();
+      alert("Game has been reset.");
+    });
+
+    document.getElementById('super-points').addEventListener('click', function() {
+      score += 1000;
+      updateScore();
+      alert("Super points added!");
+    });
+
+    document.getElementById('assign-badge').addEventListener('click', function() {
+      const selectedBadge = document.getElementById('badge-select').value;
+      const targetPlayer = document.getElementById('player-name-select').value;
+
+      if (!targetPlayer) {
+        alert("Please enter a player's name.");
+        return;
+      }
+
+      // Jos pelaaja ei ole admin, ei voi antaa badgea
+      if (selectedBadge === 'none') {
+        allPlayers[targetPlayer].title = 'None';
+      } else if (selectedBadge === 'admin') {
+        allPlayers[targetPlayer].title = 'Admin';
+      } else if (selectedBadge === 'vip') {
+        allPlayers[targetPlayer].title = 'VIP';
+      } else if (selectedBadge === 'tester') {
+        allPlayers[targetPlayer].title = 'Tester';
+      } else if (selectedBadge === 'banned') {
+        allPlayers[targetPlayer].title = 'Banned';
+      }
+
+      // Päivitetään pelaajan titteli
+      if (targetPlayer === playerName) {
+        playerTitle = allPlayers[targetPlayer].title;
+        updateScore();
+      }
+
+      alert(`Badge '${allPlayers[targetPlayer].title}' assigned to ${targetPlayer}!`);
+    });
+  </script>
+</body>
+</html>
