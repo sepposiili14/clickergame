@@ -1,0 +1,64 @@
+/* Tyylit koko sivulle */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6;
+    margin: 0;
+    height: 100vh; /* Täyttää koko näytön korkeus */
+    display: flex;
+    justify-content: center; /* Keskittää sisällön vaakasuunnassa */
+    align-items: center; /* Keskittää sisällön pystysuunnassa */
+}
+
+/* Pelin alue */
+.game {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Keskittää sisällön pystysuunnassa */
+    align-items: center; /* Keskittää sisällön vaakasuunnassa */
+}
+
+/* Keksin painike ja alue */
+.cookie-area {
+    display: flex;
+    justify-content: center; /* Keskittää keksin vaakasuunnassa */
+    align-items: center; /* Keskittää keksin pystysuunnassa */
+    flex-direction: column;
+    position: absolute; /* Asetetaan absoluuttinen sijainti */
+    top: 10px; /* Siirtää keksin kuvan ja napin vähän ylös */
+    left: 10px; /* Siirtää keksin kuvan ja napin vasemmalle */
+}
+
+/* Keksin painikkeen tyylit */
+button {
+    font-size: 20px;
+    padding: 10px;
+    margin: 10px;
+    cursor: pointer;
+    background-color: #ffcc00;
+    border: none;
+}
+
+/* Keksin kuvan koko */
+#cookieImage {
+    width: 150px; /* Voit säätää keksin kokoa tästä */
+    height: 150px;
+}
+
+/* Päivittäiset ostot ja päivitykset */
+.shop, .upgrades, .ascend {
+    margin-top: 30px;
+}
+
+/* Poistetaan mahdollisuus siirtää kuvaa */
+#cookieImage {
+    pointer-events: none; /* Tämä estää kuvan klikkauksen */
+}
+
+/* Nappi keskitetään */
+#clickButton {
+    background-color: #ffcc00;
+    border: none;
+    font-size: 24px;
+    padding: 20px;
+}
